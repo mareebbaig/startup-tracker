@@ -95,7 +95,9 @@ interface Extractor {
 
 **Problem:** same round shows up on 3–4 sites.
 
-**Decision:** dedupe key = `normalize(companyName) + round + yearMonth`
+**Decision:** one record per company = `normalize(companyName)`.
+Inside it, a news item joins an existing round if it's within **60 days** and the round type matches (or one is unknown); otherwise it's a new round.
+(Better than `yearMonth`: news on 30 Nov + 2 Dec stays one round.)
 - normalize: lowercase, strip `GmbH`, `UG`, `AG`, `SE`, punctuation
 - keep all source URLs in one record (`sources: []`)
 
@@ -215,9 +217,18 @@ interface FundingRound {
 
 ---
 
-## Open questions
+## ADR-13 — Scope filters
 
-1. GitHub repo — private, name `startup-tracker`?
-2. MongoDB Atlas account — exists already, or create one?
-3. Cities to focus? (all Germany vs. Frankfurt / Berlin / Munich / remote-friendly)
-4. Minimum round size worth tracking? (e.g. ≥ €500k)
+- **Cities:** all of Germany. City = stored as a detail only, no filtering by city.
+- **Minimum round:** ≥ **€500k** (`amountEur >= 500_000`).
+  Rounds with unknown amount → keep, mark `amountEur: undefined` (often still relevant).
+**Status:** Accepted.
+
+---
+
+## Resolved questions
+
+1. GitHub repo → `startup-tracker` created ✅
+2. MongoDB Atlas → existing account, DB `startup_tracker` ✅
+3. Cities → all Germany, city only as detail ✅
+4. Minimum round → €500k ✅

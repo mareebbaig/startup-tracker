@@ -1,0 +1,17 @@
+{
+  "name": "@st/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ingest": "tsx src/ingest.ts",
+    "export": "tsx src/export-csv.ts",
+    "check-feeds": "tsx src/check-feeds.ts"
+  },
+  "dependencies": {
+    "@st/shared": "*",
+    "dotenv": "^16.4.0",
+    "mongodb": "^6.12.0",
+    "rss-parser": "^3.13.0"
+  }
+}

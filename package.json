@@ -1,0 +1,26 @@
+{
+  "name": "startup-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Find German tech startups that recently raised funding",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "ingest": "npm run ingest -w @st/worker",
+    "export": "npm run export -w @st/worker",
+    "check-feeds": "npm run check-feeds -w @st/worker",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
