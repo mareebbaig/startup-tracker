@@ -6,12 +6,17 @@
   "scripts": {
     "ingest": "tsx src/ingest.ts",
     "export": "tsx src/export-csv.ts",
-    "check-feeds": "tsx src/check-feeds.ts"
+    "check-feeds": "tsx src/check-feeds.ts",
+    "enrich": "tsx src/enrich-cli.ts"
   },
   "dependencies": {
     "@st/shared": "*",
+    "cheerio": "^1.2.0",
     "dotenv": "^16.4.0",
     "mongodb": "^6.12.0",
     "rss-parser": "^3.13.0"
+  },
+  "exports": {
+    "./*": "./src/*"
   }
 }

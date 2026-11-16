@@ -15,12 +15,17 @@
     "export": "npm run export -w @st/worker",
     "check-feeds": "npm run check-feeds -w @st/worker",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "enrich": "npm run enrich -w @st/worker",
+    "dev": "concurrently -n api,web -c green,cyan \"npm run dev -w @st/api\" \"npm run dev -w @st/web\"",
+    "build": "npm run build -w @st/web",
+    "start": "npm run start -w @st/api"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "concurrently": "^9.1.0"
   }
 }

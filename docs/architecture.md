@@ -115,15 +115,30 @@ Store `sector` tags, don't delete non-tech → can re-filter later.
 
 ## ADR-08 — Enrichment (for jobs & clients)
 
-Per company, after extraction:
-- **Website** → from article links / simple search
-- **Careers page** → check `/careers`, `/jobs`, `/karriere` + known ATS links (Personio, JOIN, Greenhouse, Lever, Ashby)
-- **Open roles** → titles from the ATS page (e.g. "Full-stack Engineer")
-- **Tech stack** → keywords in job posts (Node, React, TypeScript, Python, …)
-- **Team size** → if found
-- **Founder / CTO name** → only from public sources (article, imprint)
+Runs after ingest (`npm run enrich`, also in the 6-hourly workflow, max 25 per run). Re-check every 7 days.
 
-**Status:** Accepted for phase 2.
+**Order (stop at the first that works):**
+1. **Website** → link in the news article whose domain looks like the name (`langdock.com` for "Langdock") → else guess `name.de/.com/.io/.ai/.app/.tech` and check the page title
+2. **Job board link** on homepage or careers page → read it via the board's **public API** (clean titles + full job text):
+   | Board | Read via |
+   |---|---|
+   | Personio | `{slug}.jobs.personio.de/xml` |
+   | Greenhouse | `boards-api.greenhouse.io/v1/boards/{slug}/jobs` |
+   | Lever | `api.lever.co/v0/postings/{slug}` |
+   | Ashby | `api.ashbyhq.com/posting-api/job-board/{slug}` |
+   | Recruitee | `{slug}.recruitee.com/api/offers/` |
+   | JOIN / Workable / own page | HTML: short link/heading texts that look like job titles |
+3. **No board link?** Try the name as slug on the boards above → saved with `verified: false` (UI shows a warning)
+4. **Stack** → keywords in job texts (node, react, typescript, python, …)
+5. **People** → founder / CEO / CTO names from article text (regex). UI links to a LinkedIn *search*, nothing is scraped from LinkedIn.
+
+**Match score (0–100)** — `packages/shared/src/match.ts`, edit `MY_STACK` there:
+- dev roles open: +40 (+10 if 3+)
+- each matching stack keyword: +12 (max 36)
+- round in last 90 days: +14
+
+**Politeness:** 1 request/sec per host, robots.txt respected for websites, 15 s timeout, 2 MB cap.
+**Status:** Accepted.
 
 ---
 
@@ -139,11 +154,12 @@ Per company, after extraction:
 
 ## ADR-10 — UI
 
-**Decision:** React (Vite) web app + small Express API.
-- Table: company, city, amount, round, date, hiring?, stack match, status
-- Filters: city, round, amount, "matches my stack", date range
-- Optional later: weekly email digest
-**Status:** Accepted for phase 2. Phase 1 = CLI / CSV output only.
+**Decision:** React (Vite) + Express API, **runs locally** (`npm run dev`). No hosting needed (personal tool, data in Atlas).
+- Table: fit score, company, city, round, amount, date, hiring (dev / all), my-stack tags, status
+- Filters: search, city, round, amount, time, status, hiring, dev roles, good match (≥ 50), incl. non-tech; sort by newest / match / amount / name
+- Side panel: website (editable), rounds + sources + investors, jobs (dev roles first), stack, people, notes, "re-check" button
+- Review tab: unclear headlines → type name → save, or dismiss
+**Status:** Accepted (phase 2).
 
 ---
 
@@ -211,8 +227,8 @@ interface FundingRound {
 
 | Phase | Scope | Output |
 |---|---|---|
-| **1** | RSS fetch + regex extract + dedupe + MongoDB + CSV export | List of funded startups |
-| **2** | Enrichment (careers, roles, stack) + React UI + outreach status | Usable daily tool |
+| **1** ✅ | RSS fetch + regex extract + dedupe + MongoDB + CSV export | List of funded startups |
+| **2** ✅ | Enrichment (careers, roles, stack) + React UI + outreach status | Usable daily tool |
 | **3** | Ollama fallback, weekly digest, Handelsregister source | Better coverage |
 
 ---

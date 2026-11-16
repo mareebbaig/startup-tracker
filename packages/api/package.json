@@ -1,0 +1,19 @@
+{
+  "name": "@st/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@st/shared": "*",
+    "@st/worker": "*",
+    "express": "^5.1.0",
+    "mongodb": "^6.12.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
+  }
+}

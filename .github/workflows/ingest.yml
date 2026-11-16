@@ -1,4 +1,4 @@
-name: Ingest funding news
+name: Ingest + enrich
 
 on:
   schedule:
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,6 +21,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run ingest
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: startup_tracker
+      - run: npm run enrich -- --limit 25
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB: startup_tracker
