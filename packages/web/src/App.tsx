@@ -1,13 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { ago, api, type Meta, type S } from "./api.ts";
+import { ago, api, AuthError, type Meta, type S } from "./api.ts";
 import { DetailPanel } from "./DetailPanel.tsx";
 import { DEFAULT_FILTERS, Filters, type FilterState } from "./Filters.tsx";
+import { Login } from "./Login.tsx";
 import { ReviewList } from "./ReviewList.tsx";
 import { StartupTable } from "./StartupTable.tsx";
 
 type Tab = "startups" | "review";
 
 export function App() {
+  // null = still checking
+  const [auth, setAuth] = useState<{ required: boolean; loggedIn: boolean } | null>(null);
+  useEffect(() => {
+    api.session().then(setAuth).catch(() => setAuth({ required: false, loggedIn: true }));
+  }, []);
+
+  if (!auth) return null;
+  if (auth.required && !auth.loggedIn) return <Login onDone={() => setAuth({ ...auth, loggedIn: true })} />;
+  return <Tracker canLogout={auth.required} onLoggedOut={() => setAuth({ ...auth, loggedIn: false })} />;
+}
+
+function Tracker({ canLogout, onLoggedOut }: { canLogout: boolean; onLoggedOut: () => void }) {
   const [tab, setTab] = useState<Tab>("startups");
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [rows, setRows] = useState<S[]>([]);
@@ -24,11 +37,12 @@ export function App() {
       setRows(list);
       setMeta(m);
     } catch (e) {
+      if (e instanceof AuthError) return onLoggedOut();
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const t = setTimeout(load, 200); // small debounce for the search box
@@ -56,10 +70,15 @@ export function App() {
           <button className={tab === "review" ? "on" : ""} onClick={() => setTab("review")}>
             Review {meta?.reviewOpen ? <span className="count warn">{meta.reviewOpen}</span> : null}
           </button>
+          {canLogout && (
+            <button className="link" onClick={() => api.logout().then(onLoggedOut)}>
+              Log out
+            </button>
+          )}
         </nav>
       </header>
 
-      {error && <div className="error">Could not load data: {error}. Is the API running (npm run dev)?</div>}
+      {error && <div className="error">Could not load data: {error}. Is the API running?</div>}
 
       {tab === "startups" ? (
         <>

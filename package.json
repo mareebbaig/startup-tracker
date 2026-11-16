@@ -19,13 +19,15 @@
     "enrich": "npm run enrich -w @st/worker",
     "dev": "concurrently -n api,web -c green,cyan \"npm run dev -w @st/api\" \"npm run dev -w @st/web\"",
     "build": "npm run build -w @st/web",
-    "start": "npm run start -w @st/api"
+    "start": "npm run start -w @st/api",
+    "build:vercel": "node scripts/build-vercel.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "concurrently": "^9.1.0",
+    "esbuild": "^0.25.12",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "concurrently": "^9.1.0"
+    "vitest": "^3.0.0"
   }
 }

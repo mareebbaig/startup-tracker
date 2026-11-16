@@ -20,13 +20,20 @@ export interface ReviewItem {
   extraction: { company: string | null; amountEur?: number; round: string; location: { city?: string } };
 }
 
+/** Thrown on 401 → App shows the login screen */
+export class AuthError extends Error {}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
+  const res = await fetch(path, { ...init, credentials: "same-origin", headers: { "Content-Type": "application/json", ...init?.headers } });
+  if (res.status === 401 && !path.endsWith("/login")) throw new AuthError("login required");
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? res.statusText);
   return res.json();
 }
 
 export const api = {
+  session: () => call<{ required: boolean; loggedIn: boolean }>("/api/session"),
+  login: (password: string) => call<{ ok: true }>("/api/login", { method: "POST", body: JSON.stringify({ password }) }),
+  logout: () => call<{ ok: true }>("/api/logout", { method: "POST" }),
   list: (params: Record<string, string>) => {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
     return call<S[]>(`/api/startups?${qs}`);

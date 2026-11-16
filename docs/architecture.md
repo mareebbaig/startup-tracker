@@ -190,6 +190,20 @@ startup-tracker/
 
 ---
 
+## ADR-14 — Hosting on Vercel + login
+
+**Decision:**
+- UI (static) + API (one Vercel Function) on **Vercel**, built with the **Build Output API** (`scripts/build-vercel.mjs`): esbuild bundles the Express API into one file → no monorepo / TypeScript import issues on Vercel.
+- Ingest + enrich stay in **GitHub Actions** (scheduled, no time limits to worry about).
+- Function max duration 300 s (Hobby limit) → enough for "re-check" of one startup.
+- **Password login** (`APP_PASSWORD`): HttpOnly cookie (HMAC of the password), 30 days. Without `APP_PASSWORD` the API refuses all data on Vercel — so the list can never be public by mistake.
+- Mongo connection is only opened **after** the login check, reused while the function is warm.
+- Atlas Network Access stays `0.0.0.0/0` (Vercel + GitHub runners have changing IPs) → strong DB password matters.
+
+**Status:** Accepted.
+
+---
+
 ## Data model (first version)
 
 ```ts

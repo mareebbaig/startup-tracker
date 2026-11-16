@@ -20,6 +20,20 @@ cp .env.example .env      # paste your MongoDB Atlas connection string
 npm run dev               # API on :4000 + UI on http://localhost:5173
 ```
 
+## Deploy on Vercel
+
+The UI + API run on Vercel; ingest/enrich keep running in GitHub Actions.
+
+1. vercel.com → **Add New → Project** → import `startup-tracker` from GitHub
+2. Leave framework / build settings as they are (`vercel.json` sets them)
+3. **Environment Variables** (Production):
+   - `MONGODB_URI` — same Atlas string as in `.env`
+   - `MONGODB_DB` — `startup_tracker`
+   - `APP_PASSWORD` — a long password for the login screen
+4. **Deploy** → open the URL → log in
+
+Every push to `main` deploys again. Test the Vercel build locally: `npm run build:vercel`.
+
 ## Commands
 
 | Command | What it does |
@@ -30,6 +44,7 @@ npm run dev               # API on :4000 + UI on http://localhost:5173
 | `npm run ingest` | Fetch feeds → extract → save new startups |
 | `npm run enrich` | Website, job board, roles, stack, founders for up to 20 due startups (`-- --limit 50`, `-- --name Langdock`) |
 | `npm run export` | Tech startups → `data/startups.csv` (`-- --all` for non-tech too) |
+| `npm run build:vercel` | Build for Vercel → `.vercel/output` |
 | `npm test` | All tests |
 
 ## How it works
